@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE log4j:configuration PUBLIC "-//APACHE//DTD LOG4J 1.2//EN" "log4j.dtd">  
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">  
+
+    <appender name="Console" class="org.apache.log4j.ConsoleAppender">  
+        <layout class="org.apache.log4j.PatternLayout">  
+            <param name="ConversionPattern" value="%d %p [%C{1}] - %m%n" />
+        </layout>  
+    </appender>  
+ 
+    <appender name="File" class="org.apache.log4j.DailyRollingFileAppender">  
+        <param name="file" value="C:\\_Log\\BrmCmStatBatch\\service.out"/> <!-- 로그가 저장 될 경로 -->
+        <param name="DatePattern" value="'.'yyyy-MM-dd'.log'"/>  
+        <layout class="org.apache.log4j.PatternLayout">  
+            <param name="ConversionPattern" value="%d %p [%l] - %m%n"/>  
+        </layout>  
+    </appender>  
+
+	<logger name="jdbc.sqlonly">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="jdbc.resultsettable">
+		<level value="INFO" />
+	</logger>
+
+	<logger name="jdbc.audit">
+		<level value="ERROR" />
+	</logger>
+
+	<logger name="jdbc.resultset">
+		<level value="ERROR" />
+	</logger>
+
+	<logger name="jdbc.sqltiming">
+		<level value="ERROR" />
+	</logger>
+
+	<logger name="jdbc.connection">
+		<level value="ERROR" />
+	</logger>
+		
+	<logger name="com.corealism">
+		<level value="INFO" />
+	</logger>
+
+    <root>
+        <level value="DEBUG"/>  
+        <appender-ref ref="Console"/>
+        <appender-ref ref="File"/>
+    </root>  
+
+</log4j:configuration>  

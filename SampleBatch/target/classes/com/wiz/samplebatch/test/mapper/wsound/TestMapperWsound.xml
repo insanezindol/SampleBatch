@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wiz.samplebatch.test.mapper.wsound.TestMapperWsound"> 
+
+	<select id='selectWsoundTest'  resultType='int'>
+		SELECT /* selectWsoundTest */
+			count(*)
+		FROM tbl_wsound_jta_test
+	</select>
+
+
+</mapper>

@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<!-- Bean scan -->
+	<context:component-scan base-package="com.wiz" />
+	
+	<!-- Make static method -->
+	<bean id="force-init" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+		<property name="staticMethod" value="com.wiz.common.constants.Constants.setConfigProp" />
+		<property name="arguments">
+			<list>
+				<ref bean="configProp" />
+			</list>
+		</property>
+	</bean>
+
+	<bean id="constants" class="com.wiz.common.constants.Constants" depends-on="force-init"/>
+	<!-- Make static end -->
+
+	<!-- Transaction -->
+	<tx:annotation-driven proxy-target-class="true" />
+
+	<!-- DB start Ktmusic -->
+	<bean id="ktmusic_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="#{configProp['ktmusic.jdbc.url']}" />
+		<property name="username" value="#{configProp['ktmusic.jdbc.username']}" />
+		<property name="password" value="#{configProp['ktmusic.jdbc.password']}" />
+	</bean>	
+	
+	<bean id="ktmusic_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+	    <constructor-arg ref="ktmusic_dataSource" />
+	    <property name="logFormatter">
+	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+	        <property name="loggingType" value="MULTI_LINE" />
+	        <property name="sqlPrefix" value="SQL:::" />
+	      </bean>
+	      </property>
+	</bean>
+	
+	<bean id="ktmusic_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="ktmusic_log4jdbc_dataSource" />
+	</bean>
+	
+	<!-- For Transaction : type "explicit" -->
+	<tx:annotation-driven transaction-manager ="ktmusic_transactionManager"/>
+	 
+	<bean id="ktmusic_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="ktmusic_log4jdbc_dataSource" />
+		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Ktmusic.xml" />
+		<property name="typeAliasesPackage" value="com.wiz.common.models" />
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>			
+	</bean>    
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wiz.samplebatch.**.ktmusic" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+		<property name="sqlSessionFactoryBeanName" value="ktmusic_sqlSessionFactory" />
+	</bean>
+	<!-- DB Ktmusic end -->
+	
+	<!-- DB start Xring -->
+	<bean id="xring_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
+		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="url" value="#{configProp['xring.jdbc.url']}" />
+		<property name="username" value="#{configProp['xring.jdbc.username']}" />
+		<property name="password" value="#{configProp['xring.jdbc.password']}" />
+	</bean>	
+	
+	<bean id="xring_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+	    <constructor-arg ref="xring_dataSource" />
+	    <property name="logFormatter">
+	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+	        <property name="loggingType" value="MULTI_LINE" />
+	        <property name="sqlPrefix" value="SQL:::" />
+	      </bean>
+	      </property>
+	</bean>	
+	
+	<bean id="xring_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="xring_log4jdbc_dataSource" />
+	</bean>
+	
+	<!-- For Transaction : type "explicit" -->
+	<tx:annotation-driven transaction-manager ="xring_transactionManager"/>
+	 
+	<bean id="xring_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="xring_log4jdbc_dataSource" />
+		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Xring.xml" />
+		<property name="typeAliasesPackage" value="com.wiz.common.models" />
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>			
+	</bean>    
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wiz.samplebatch.**.xring" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+		<property name="sqlSessionFactoryBeanName" value="xring_sqlSessionFactory" />
+	</bean>
+	<!-- DB Xring end -->
+
+	<!-- DB start Wsound -->
+	<bean id="wsound_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url" value="#{configProp['wsound.jdbc.url']}" />
+		<property name="username" value="#{configProp['wsound.jdbc.username']}" />
+		<property name="password" value="#{configProp['wsound.jdbc.password']}" />
+	</bean>	
+	
+	<bean id="wsound_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+	    <constructor-arg ref="wsound_dataSource" />
+	    <property name="logFormatter">
+	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+	        <property name="loggingType" value="MULTI_LINE" />
+	        <property name="sqlPrefix" value="SQL:::" />
+	      </bean>
+	      </property>
+	</bean>	
+	
+	<bean id="wsound_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="wsound_log4jdbc_dataSource" />
+	</bean>
+	
+	<!-- For Transaction : type "explicit" -->
+	<tx:annotation-driven transaction-manager ="wsound_transactionManager"/>
+	 
+	<bean id="wsound_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="wsound_log4jdbc_dataSource" />
+		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Wsound.xml" />
+		<property name="typeAliasesPackage" value="com.wiz.common.models" />
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>			
+	</bean>    
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wiz.samplebatch.**.wsound" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+		<property name="sqlSessionFactoryBeanName" value="wsound_sqlSessionFactory" />
+	</bean>
+	<!-- DB Wsound end -->
+
+	<!-- DB start Xringstat -->
+	<bean id="xringstat_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
+		<property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
+		<property name="url" value="#{configProp['xringstat.jdbc.url']}" />
+		<property name="username" value="#{configProp['xringstat.jdbc.username']}" />
+		<property name="password" value="#{configProp['xringstat.jdbc.password']}" />
+	</bean>	
+	
+	<bean id="xringstat_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+	    <constructor-arg ref="xringstat_dataSource" />
+	    <property name="logFormatter">
+	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+	        <property name="loggingType" value="MULTI_LINE" />
+	        <property name="sqlPrefix" value="SQL:::" />
+	      </bean>
+	      </property>
+	</bean>	
+	
+	<bean id="xringstat_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="xringstat_log4jdbc_dataSource" />
+	</bean>
+	
+	<!-- For Transaction : type "explicit" -->
+	<tx:annotation-driven transaction-manager ="xringstat_transactionManager"/>
+	 
+	<bean id="xringstat_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="xringstat_log4jdbc_dataSource" />
+		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Xringstat.xml" />
+		<property name="typeAliasesPackage" value="com.wiz.common.models" />
+		<property name="configuration">
+			<bean class="org.apache.ibatis.session.Configuration">
+				<property name="mapUnderscoreToCamelCase" value="true"/>
+			</bean>
+		</property>			
+	</bean>    
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.wiz.samplebatch.**.Xringstat" />
+		<property name="annotationClass" value="org.springframework.stereotype.Repository"/>
+		<property name="sqlSessionFactoryBeanName" value="xringstat_sqlSessionFactory" />
+	</bean>
+	<!-- DB Xringstat end -->
+	
+</beans>

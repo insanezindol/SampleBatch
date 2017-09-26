@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="ktmusic.jdbc.url">8371fc9da635d4bed964437cc062f4ceae317ed36ffaadfee96ffe82dd7dbd674a9fe8d20bd7d266215b31d441</entry>
+    <entry key="ktmusic.jdbc.username">8261f38bef33c5</entry>
+    <entry key="ktmusic.jdbc.password">8261f38bef33c5</entry>
+
+    <entry key="xring.jdbc.url">8371fc9da635d4bed964437cc062f4ceae317ed36ffaadfee96ffe82dd7dbd674a9fe8d20bd7d266215b31d441</entry>
+    <entry key="xring.jdbc.username">9167f790fb</entry>
+    <entry key="xring.jdbc.password">9167f790fb6b96ef8e</entry>
+    
+    <entry key="wsound.jdbc.url">8371fc9da629d7b3c96d5430d178a78fbb437dd271e5acf7fe70fe82c261bb614694edd40addac5f07731df20018df32f9d894d584c29609acd4834691969bab</entry>
+    <entry key="wsound.jdbc.username">9e66f18bf23e</entry>
+    <entry key="wsound.jdbc.password">9e66f18bf23ef9afcd6c07</entry>
+
+    <entry key="xringstat.jdbc.url">8371fc9da635d4bed964437cc062f4ceae317ed36ffaadfee96ffe82dd7dbd674a9fe8d20bd7d266215b31d441</entry>
+    <entry key="xringstat.jdbc.username">9167f790fb29d2bece</entry>
+    <entry key="xringstat.jdbc.password">9167f790fb6b96ef8e</entry>
+    
+    <entry key="system.whoami">local</entry>
+    
+</properties>
