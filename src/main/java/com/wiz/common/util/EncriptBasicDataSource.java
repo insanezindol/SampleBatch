@@ -1,11 +1,13 @@
 package com.wiz.common.util;
 
 
+import java.nio.charset.StandardCharsets;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-public class EncriptBasicDataSource extends org.apache.commons.dbcp.BasicDataSource{
+public class EncriptBasicDataSource extends org.apache.commons.dbcp2.BasicDataSource{
 	
 	private final static String[] keyHexStrings = {"c0cefc2b812c0f2066fa2176b98b6b80"};
 	private final static String[] ivSHextrings  = {"00cefc2b812c0f2066fa2176b98b6b80"};
@@ -42,7 +44,7 @@ public class EncriptBasicDataSource extends org.apache.commons.dbcp.BasicDataSou
 	               
 	        // encryption
 	        cipher.init(Cipher.ENCRYPT_MODE, key, ivSpec);
-	        byte[] cipherText = cipher.doFinal(plainString.getBytes());
+	        byte[] cipherText = cipher.doFinal(plainString.getBytes(StandardCharsets.UTF_8));
 	        encriptString = bytesToHexString(cipherText);	        
 	        //encriptString = "" + keyIdx + encriptString;
 	        
@@ -59,7 +61,7 @@ public class EncriptBasicDataSource extends org.apache.commons.dbcp.BasicDataSou
 		String plainString = null;
 
 		try{	
-			if(encriptString != null && !encriptString.equals("")){
+			if(encriptString != null && !encriptString.isEmpty()){
 				int keyIdx = 0;	
 			
 				String keyHexString = keyHexStrings[keyIdx];
@@ -76,7 +78,7 @@ public class EncriptBasicDataSource extends org.apache.commons.dbcp.BasicDataSou
 		        cipher.init(Cipher.DECRYPT_MODE, key, ivSpec);
 		        byte[] plainText = cipher.doFinal(hexToBytes(encriptString));
 		        
-		        plainString = new String(plainText, "UTF-8");
+		        plainString = new String(plainText, StandardCharsets.UTF_8);
 			}
 		
 		}catch(Exception e){
@@ -88,14 +90,13 @@ public class EncriptBasicDataSource extends org.apache.commons.dbcp.BasicDataSou
 
 	
 	private static String bytesToHexString(byte[] bytes){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for(int i=0; i<bytes.length;i++){
 			String tmpStr = Integer.toHexString(bytes[i]& 0xff);
 			if(tmpStr.length()==1) tmpStr="0"+tmpStr;
 			sb.append(tmpStr);
-			sb.append("");
         }
-		return new String(sb);
+		return sb.toString();
 	}
 	
 

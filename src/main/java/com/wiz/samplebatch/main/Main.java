@@ -1,8 +1,10 @@
 package com.wiz.samplebatch.main;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -36,14 +38,24 @@ public class Main {
 		if (!"local".equals(serverType) && !"tb".equals(serverType) && !"real".equals(serverType))
 			throw new Exception("args is invalid ");
 		
-		String springConfig = "context/"+ serverType +"_BaseContext.xml";
-		ApplicationContext context =  new ClassPathXmlApplicationContext(springConfig);
-		Main main = context.getBean(Main.class);
-
-		main.summaryBatch();
+		// 환경별 Log4j2 설정 적용 (Spring 5 부터 Log4jConfigurer 가 제거되어 직접 초기화)
+		initLogging("log4j/"+ serverType +"_log4j2.xml");
 		
-		((ConfigurableApplicationContext) context).close();
+		String springConfig = "context/"+ serverType +"_BaseContext.xml";
+		try (ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(springConfig)) {
+			Main main = context.getBean(Main.class);
+			main.summaryBatch();
+		}
+		
 		log.info("brmcmstat batch end");
+	}
+
+	private static void initLogging(String configLocation) throws URISyntaxException {
+		URL configUrl = Main.class.getClassLoader().getResource(configLocation);
+		if (configUrl == null) {
+			throw new IllegalStateException("log4j2 config not found: " + configLocation);
+		}
+		Configurator.reconfigure(configUrl.toURI());
 	}
 
 	public void summaryBatch() throws Exception{

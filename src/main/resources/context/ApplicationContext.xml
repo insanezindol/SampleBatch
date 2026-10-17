@@ -3,9 +3,9 @@
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx https://www.springframework.org/schema/tx/spring-tx.xsd">
 
 	<!-- Bean scan -->
 	<context:component-scan base-package="com.wiz" />
@@ -23,36 +23,45 @@
 	<bean id="constants" class="com.wiz.common.constants.Constants" depends-on="force-init"/>
 	<!-- Make static end -->
 
+	<!-- SQL 로그 리스너 : jdbc.query 로거로 SQL 과 파라미터를 출력 -->
+	<bean id="sqlLoggingListener" class="net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener">
+		<property name="loggerName" value="jdbc.query" />
+		<property name="logLevel" value="INFO" />
+		<property name="writeDataSourceName" value="true" />
+		<property name="queryLogEntryCreator">
+			<bean class="net.ttddyy.dsproxy.listener.logging.DefaultQueryLogEntryCreator">
+				<property name="multiline" value="true" />
+			</bean>
+		</property>
+	</bean>
+
 	<!-- Transaction -->
 	<tx:annotation-driven proxy-target-class="true" />
 
 	<!-- DB start Ktmusic -->
 	<bean id="ktmusic_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
-		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="driverClassName" value="oracle.jdbc.OracleDriver" />
 		<property name="url" value="#{configProp['ktmusic.jdbc.url']}" />
 		<property name="username" value="#{configProp['ktmusic.jdbc.username']}" />
 		<property name="password" value="#{configProp['ktmusic.jdbc.password']}" />
 	</bean>	
 	
-	<bean id="ktmusic_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
-	    <constructor-arg ref="ktmusic_dataSource" />
-	    <property name="logFormatter">
-	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
-	        <property name="loggingType" value="MULTI_LINE" />
-	        <property name="sqlPrefix" value="SQL:::" />
-	      </bean>
-	      </property>
+	<!-- SQL 로그 (datasource-proxy) -->
+	<bean id="ktmusic_proxy_dataSource" class="net.ttddyy.dsproxy.support.ProxyDataSource">
+		<property name="dataSource" ref="ktmusic_dataSource" />
+		<property name="dataSourceName" value="ktmusic" />
+		<property name="listener" ref="sqlLoggingListener" />
 	</bean>
 	
 	<bean id="ktmusic_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="ktmusic_log4jdbc_dataSource" />
+		<property name="dataSource" ref="ktmusic_proxy_dataSource" />
 	</bean>
 	
 	<!-- For Transaction : type "explicit" -->
 	<tx:annotation-driven transaction-manager ="ktmusic_transactionManager"/>
 	 
 	<bean id="ktmusic_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="ktmusic_log4jdbc_dataSource" />
+		<property name="dataSource" ref="ktmusic_proxy_dataSource" />
 		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Ktmusic.xml" />
 		<property name="typeAliasesPackage" value="com.wiz.common.models" />
 		<property name="configuration">
@@ -71,31 +80,28 @@
 	
 	<!-- DB start Xring -->
 	<bean id="xring_dataSource" class="com.wiz.common.util.EncriptBasicDataSource">
-		<property name="driverClassName" value="oracle.jdbc.driver.OracleDriver" />
+		<property name="driverClassName" value="oracle.jdbc.OracleDriver" />
 		<property name="url" value="#{configProp['xring.jdbc.url']}" />
 		<property name="username" value="#{configProp['xring.jdbc.username']}" />
 		<property name="password" value="#{configProp['xring.jdbc.password']}" />
 	</bean>	
 	
-	<bean id="xring_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
-	    <constructor-arg ref="xring_dataSource" />
-	    <property name="logFormatter">
-	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
-	        <property name="loggingType" value="MULTI_LINE" />
-	        <property name="sqlPrefix" value="SQL:::" />
-	      </bean>
-	      </property>
-	</bean>	
+	<!-- SQL 로그 (datasource-proxy) -->
+	<bean id="xring_proxy_dataSource" class="net.ttddyy.dsproxy.support.ProxyDataSource">
+		<property name="dataSource" ref="xring_dataSource" />
+		<property name="dataSourceName" value="xring" />
+		<property name="listener" ref="sqlLoggingListener" />
+	</bean>
 	
 	<bean id="xring_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="xring_log4jdbc_dataSource" />
+		<property name="dataSource" ref="xring_proxy_dataSource" />
 	</bean>
 	
 	<!-- For Transaction : type "explicit" -->
 	<tx:annotation-driven transaction-manager ="xring_transactionManager"/>
 	 
 	<bean id="xring_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="xring_log4jdbc_dataSource" />
+		<property name="dataSource" ref="xring_proxy_dataSource" />
 		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Xring.xml" />
 		<property name="typeAliasesPackage" value="com.wiz.common.models" />
 		<property name="configuration">
@@ -120,25 +126,22 @@
 		<property name="password" value="#{configProp['wsound.jdbc.password']}" />
 	</bean>	
 	
-	<bean id="wsound_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
-	    <constructor-arg ref="wsound_dataSource" />
-	    <property name="logFormatter">
-	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
-	        <property name="loggingType" value="MULTI_LINE" />
-	        <property name="sqlPrefix" value="SQL:::" />
-	      </bean>
-	      </property>
-	</bean>	
+	<!-- SQL 로그 (datasource-proxy) -->
+	<bean id="wsound_proxy_dataSource" class="net.ttddyy.dsproxy.support.ProxyDataSource">
+		<property name="dataSource" ref="wsound_dataSource" />
+		<property name="dataSourceName" value="wsound" />
+		<property name="listener" ref="sqlLoggingListener" />
+	</bean>
 	
 	<bean id="wsound_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="wsound_log4jdbc_dataSource" />
+		<property name="dataSource" ref="wsound_proxy_dataSource" />
 	</bean>
 	
 	<!-- For Transaction : type "explicit" -->
 	<tx:annotation-driven transaction-manager ="wsound_transactionManager"/>
 	 
 	<bean id="wsound_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="wsound_log4jdbc_dataSource" />
+		<property name="dataSource" ref="wsound_proxy_dataSource" />
 		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Wsound.xml" />
 		<property name="typeAliasesPackage" value="com.wiz.common.models" />
 		<property name="configuration">
@@ -163,25 +166,22 @@
 		<property name="password" value="#{configProp['xringstat.jdbc.password']}" />
 	</bean>	
 	
-	<bean id="xringstat_log4jdbc_dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
-	    <constructor-arg ref="xringstat_dataSource" />
-	    <property name="logFormatter">
-	      <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
-	        <property name="loggingType" value="MULTI_LINE" />
-	        <property name="sqlPrefix" value="SQL:::" />
-	      </bean>
-	      </property>
-	</bean>	
+	<!-- SQL 로그 (datasource-proxy) -->
+	<bean id="xringstat_proxy_dataSource" class="net.ttddyy.dsproxy.support.ProxyDataSource">
+		<property name="dataSource" ref="xringstat_dataSource" />
+		<property name="dataSourceName" value="xringstat" />
+		<property name="listener" ref="sqlLoggingListener" />
+	</bean>
 	
 	<bean id="xringstat_transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-		<property name="dataSource" ref="xringstat_log4jdbc_dataSource" />
+		<property name="dataSource" ref="xringstat_proxy_dataSource" />
 	</bean>
 	
 	<!-- For Transaction : type "explicit" -->
 	<tx:annotation-driven transaction-manager ="xringstat_transactionManager"/>
 	 
 	<bean id="xringstat_sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
-		<property name="dataSource" ref="xringstat_log4jdbc_dataSource" />
+		<property name="dataSource" ref="xringstat_proxy_dataSource" />
 		<property name="mapperLocations" value="classpath:com/wiz/samplebatch/**/*Xringstat.xml" />
 		<property name="typeAliasesPackage" value="com.wiz.common.models" />
 		<property name="configuration">
